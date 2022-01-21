@@ -1,0 +1,9 @@
+aiofiles==0.8.0
+fastapi==0.72.0
+jose==1.0.0
+numpy==1.19.5
+opencv_python==4.5.5.62
+pydantic==1.9.0
+python_jose==3.3.0
+SQLAlchemy==1.4.30
+uvicorn==0.17.0
