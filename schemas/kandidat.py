@@ -16,9 +16,7 @@ class KandidatCreate(KandidatBase):
 
 class Kandidat(KandidatBase):
     id: str
-    nama: str
     foto: Optional[str] = None
-    keterangan: str
 
     class Config:
         orm_mode = True
@@ -26,4 +24,4 @@ class Kandidat(KandidatBase):
 
 class KandidatResponse(BaseModel):
     message: str
-    kandidat: Optional[Kandidat] = None
+    item: Optional[Kandidat] = None

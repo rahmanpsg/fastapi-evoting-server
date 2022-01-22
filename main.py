@@ -4,7 +4,7 @@ import uvicorn
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from config.db import engine, Base
-from routes.index import authRoute, userRoute, kandidatRoute
+from routes.index import authRoute, userRoute, kandidatRoute, pemilihRoute
 from services.lbph import LBPH
 
 import models
@@ -28,24 +28,25 @@ async def index():
 app.include_router(authRoute)
 app.include_router(userRoute)
 app.include_router(kandidatRoute)
+app.include_router(pemilihRoute)
 
-lbph = LBPH()
+# lbph = LBPH()
 
 
-@app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
-    await websocket.accept()
-    try:
-        while True:
-            data = await websocket.receive_text()
-            img = lbph.base64_cv2(data)
-            imgPredict = lbph.predict_image(img)
-            # if imgPredict['detect'] is not None:
-            #     name = randint(1, 1000)
-            #     cv2.imwrite(f"{name}.jpg", img)
-            await websocket.send_json(imgPredict)
-    except WebSocketDisconnect:
-        pass
+# @app.websocket("/ws")
+# async def websocket_endpoint(websocket: WebSocket):
+#     await websocket.accept()
+#     try:
+#         while True:
+#             data = await websocket.receive_text()
+#             img = lbph.base64_cv2(data)
+#             imgPredict = lbph.predict_image(img)
+#             # if imgPredict['detect'] is not None:
+#             #     name = randint(1, 1000)
+#             #     cv2.imwrite(f"{name}.jpg", img)
+#             await websocket.send_json(imgPredict)
+#     except WebSocketDisconnect:
+#         pass
 
 
 if __name__ == '__main__':

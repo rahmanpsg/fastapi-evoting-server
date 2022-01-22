@@ -32,7 +32,6 @@ class LBPH():
                     if image.split('.')[1] == 'jpg':
                         image_path = training_images_path + '/' + image
                         training_image = cv2.imread(image_path)
-                        print(image)
                         face = self.face_detection(
                             training_image)
                         faces.append(face)
