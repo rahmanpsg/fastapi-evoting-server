@@ -21,6 +21,13 @@ class User(UserBase):
     class Config:
         orm_mode = True
 
+# Pemilih output
+
+
+class PemilihVoteCreate(BaseModel):
+    id: str
+    vote_nomor: Optional[int] = -1  # nomor default jika belum melakukan voting
+
 
 class UserResponse(BaseModel):
     message: str

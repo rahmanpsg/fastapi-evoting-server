@@ -8,6 +8,11 @@ class KandidatBase(BaseModel):
     keterangan: str
 
 
+class KandidatVoteCreate(BaseModel):
+    id: int
+    nomor: int
+
+
 class KandidatCreate(KandidatBase):
     @classmethod
     def as_form(cls, nama: str = Form(...), keterangan: str = Form(...)) -> 'KandidatCreate':
@@ -15,7 +20,7 @@ class KandidatCreate(KandidatBase):
 
 
 class Kandidat(KandidatBase):
-    id: str
+    id: int
     foto: Optional[str] = None
 
     class Config:
