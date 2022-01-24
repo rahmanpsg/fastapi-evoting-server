@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from config.db import get_db
 from schemas.daftar_vote import DaftarVote, DaftarVoteCreate, DaftarVoteList, DaftarVoteResponse
 from schemas.kandidat import KandidatVoteCreate
+from schemas.user import PemilihVoteCreate
 from services.oauth2 import get_current_user
 from repository import daftar_vote as daftarVoteRepository
 
@@ -13,7 +14,7 @@ daftarVoteRoute = APIRouter(prefix="/daftarVote", tags=['Daftar Vote'])
 
 @daftarVoteRoute.get("/", response_model=list[DaftarVote])
 async def all(db: Session = Depends(get_db)):
-    await asyncio.sleep(2)
+    # await asyncio.sleep(2)
     return daftarVoteRepository.get_all(db)
 
 
@@ -38,6 +39,13 @@ def get_list_kandidat_and_pemilih(id: int, db: Session = Depends(get_db)):
     return daftarVoteRepository.get_list(id, db)
 
 
-@daftarVoteRoute.post("list/kandidat/{id}")
-def add_list_kandidat(id: int, kandidat: KandidatVoteCreate, db: Session = Depends(get_db)):
-    return daftarVoteRepository.add_kandidat(id, kandidat, db)
+@daftarVoteRoute.post("/list/kandidat/{id}", response_model=DaftarVoteResponse, status_code=status.HTTP_202_ACCEPTED)
+async def add_list_kandidat(id: int, kandidats: list[KandidatVoteCreate], db: Session = Depends(get_db)):
+    # await asyncio.sleep(2)
+    return daftarVoteRepository.add_list_kandidat(id, kandidats, db)
+
+
+@daftarVoteRoute.post("/list/pemilih/{id}", response_model=DaftarVoteResponse, status_code=status.HTTP_202_ACCEPTED)
+async def add_list_pemilih(id: int, pemilihs: list[PemilihVoteCreate], db: Session = Depends(get_db)):
+    # await asyncio.sleep(2)
+    return daftarVoteRepository.add_list_pemilih(id, pemilihs, db)

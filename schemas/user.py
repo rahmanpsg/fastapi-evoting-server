@@ -13,7 +13,7 @@ class UserCreate(UserBase):
 
 
 class User(UserBase):
-    id: str
+    id: int
     role: str
     password: str
     status: bool
@@ -25,7 +25,7 @@ class User(UserBase):
 
 
 class PemilihVoteCreate(BaseModel):
-    id: str
+    id: int
     vote_nomor: Optional[int] = -1  # nomor default jika belum melakukan voting
 
 

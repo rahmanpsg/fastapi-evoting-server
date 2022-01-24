@@ -1,11 +1,11 @@
-import json
-from xmlrpc.client import DateTime
 from fastapi import status, HTTPException
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from models.daftar_vote import DaftarVotes
-from schemas.daftar_vote import DaftarVote, DaftarVoteCreate, DaftarVoteResponse
+from schemas.daftar_vote import DaftarVoteCreate, DaftarVoteResponse
 from schemas.kandidat import KandidatVoteCreate
+from schemas.user import PemilihVoteCreate
 from services.error_handling import add_or_edit_exception
 
 
@@ -74,6 +74,49 @@ def get_list(id: int, db: Session):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="ID Daftar Vote tidak ditemukan")
     return list
+
+
+def add_list_kandidat(id: int, kandidats: list[KandidatVoteCreate], db: Session):
+    try:
+        daftar_vote = db.query(DaftarVotes).get(id)
+
+        if not daftar_vote:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail="ID Daftar Vote tidak ditemukan")
+
+        daftar_vote.list_kandidat = jsonable_encoder(kandidats)
+
+        print(jsonable_encoder(kandidats))
+
+        db.commit()
+
+        return DaftarVoteResponse(message="Daftar Kandidat berhasil disimpan")
+    except SQLAlchemyError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e.__dict__['orig']))
+
+
+def add_list_pemilih(id: int, pemilihs: list[PemilihVoteCreate], db: Session):
+    try:
+        # raise HTTPException(
+        #     status_code=status.HTTP_400_BAD_REQUEST, detail='Daftar Vote Aktif/Berjalan tidak dapat diubah')
+
+        daftar_vote = db.query(DaftarVotes).get(id)
+
+        if not daftar_vote:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail="ID Daftar Vote tidak ditemukan")
+
+        daftar_vote.list_pemilih = jsonable_encoder(pemilihs)
+
+        print(jsonable_encoder(pemilihs))
+
+        db.commit()
+
+        return DaftarVoteResponse(message="Daftar Pemilih berhasil disimpan")
+    except SQLAlchemyError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e.__dict__['orig']))
 
 
 def add_kandidat(id: int, kandidat: KandidatVoteCreate, db: Session):
