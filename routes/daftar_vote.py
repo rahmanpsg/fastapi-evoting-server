@@ -4,8 +4,8 @@ from sqlalchemy.orm import Session
 
 from config.db import get_db
 from schemas.daftar_vote import DaftarVote, DaftarVoteCreate, DaftarVoteList, DaftarVoteResponse
-from schemas.kandidat import KandidatVoteCreate
-from schemas.user import PemilihVoteCreate
+from schemas.kandidat import KandidatHitungCepat, KandidatVoteCreate
+from schemas.user import PemilihKotakSuara, PemilihVoteCreate
 from services.oauth2 import get_current_user
 from repository import daftar_vote as daftarVoteRepository
 
@@ -37,6 +37,18 @@ async def delete(id: int,  db: Session = Depends(get_db),
 @daftarVoteRoute.get("/list/{id}", response_model=DaftarVoteList)
 def get_list_kandidat_and_pemilih(id: int, db: Session = Depends(get_db)):
     return daftarVoteRepository.get_list(id, db)
+
+
+@daftarVoteRoute.get("/kotaksuara/{id}", response_model=list[PemilihKotakSuara])
+async def get_kotak_suara(id: int,  db: Session = Depends(get_db)):
+    # await asyncio.sleep(2)
+    return daftarVoteRepository.get_kotak_suara(id, db)
+
+
+@daftarVoteRoute.get("/hitungcepat/{id}", response_model=list[KandidatHitungCepat])
+async def get_hitung_cepat(id: int,  db: Session = Depends(get_db)):
+    # await asyncio.sleep(2)
+    return daftarVoteRepository.get_hitung_cepat(id, db)
 
 
 @daftarVoteRoute.post("/list/kandidat/{id}", response_model=DaftarVoteResponse, status_code=status.HTTP_202_ACCEPTED)

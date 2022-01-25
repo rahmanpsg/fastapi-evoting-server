@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel
 
@@ -25,8 +26,13 @@ class User(UserBase):
 
 
 class PemilihVoteCreate(BaseModel):
-    id: int
-    vote_nomor: Optional[int] = -1  # nomor default jika belum melakukan voting
+    id: str
+    vote_nomor: Optional[str] = -1  # nomor default jika belum melakukan voting
+    waktu: Optional[datetime] = None
+
+
+class PemilihKotakSuara(UserBase, PemilihVoteCreate):
+    pass
 
 
 class UserResponse(BaseModel):

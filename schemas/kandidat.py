@@ -27,6 +27,10 @@ class Kandidat(KandidatBase):
         orm_mode = True
 
 
+class KandidatHitungCepat(Kandidat, KandidatVoteCreate):
+    jumlah: int
+
+
 class KandidatResponse(BaseModel):
     message: str
     item: Optional[Kandidat] = None

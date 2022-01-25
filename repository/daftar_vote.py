@@ -3,9 +3,11 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from models.daftar_vote import DaftarVotes
+from models.kandidat import Kandidats
+from models.user import Users
 from schemas.daftar_vote import DaftarVoteCreate, DaftarVoteResponse
-from schemas.kandidat import KandidatVoteCreate
-from schemas.user import PemilihVoteCreate
+from schemas.kandidat import KandidatHitungCepat, KandidatVoteCreate
+from schemas.user import PemilihKotakSuara, PemilihVoteCreate
 from services.error_handling import add_or_edit_exception
 
 
@@ -76,6 +78,73 @@ def get_list(id: int, db: Session):
     return list
 
 
+def get_kotak_suara(id: int, db: Session):
+    try:
+        list = db.query(DaftarVotes.list_pemilih).filter(
+            DaftarVotes.id == id).first()
+
+        if not list:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail="ID Daftar Vote tidak ditemukan")
+
+        filter = sorted([pemilih for pemilih in list.list_pemilih if pemilih['waktu']],
+                        key=lambda v: v['id'],)
+
+        ids = (pemilih['id'] for pemilih in filter)
+
+        pemilih = db.query(Users.nama, Users.username).filter(
+            Users.id.in_(ids)).all()
+
+        data: list[PemilihKotakSuara] = []
+
+        for i in range(len(filter)):
+            fil = filter[i]
+            pem = pemilih[i]
+            data.append(PemilihKotakSuara(id=fil['id'], vote_nomor=fil['vote_nomor'],
+                        waktu=fil['waktu'], nama=pem['nama'], username=pem['username']))
+
+        return data
+    except SQLAlchemyError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e.__dict__['orig']))
+
+
+def get_hitung_cepat(id: int, db: Session):
+    try:
+        list = db.query(DaftarVotes.list_kandidat, DaftarVotes.list_pemilih).filter(
+            DaftarVotes.id == id).first()
+
+        if not list:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail="ID Daftar Vote tidak ditemukan")
+
+        ids = (kandidat['id'] for kandidat in list.list_kandidat)
+
+        kandidat = db.query(Kandidats).filter(Kandidats.id.in_(ids)).all()
+
+        # menghitung total vote
+        vote = {}
+        for pemilih in list.list_pemilih:
+            if pemilih['vote_nomor'] in vote:
+                vote[(pemilih['vote_nomor'])] += 1
+            else:
+                vote[pemilih['vote_nomor']] = 1
+
+        data: list[KandidatHitungCepat] = []
+
+        for i, list_kandidat in enumerate(list.list_kandidat):
+            data.append(KandidatHitungCepat(id=list_kandidat['id'], nama=kandidat[i].nama, nomor=list_kandidat['nomor'],
+                        keterangan=kandidat[i].keterangan, foto=kandidat[i].foto, jumlah=vote[str(
+                            list_kandidat['nomor'])]
+                if str(list_kandidat['nomor']) in vote else 0))
+
+        return data
+
+    except SQLAlchemyError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e.__dict__['orig']))
+
+
 def add_list_kandidat(id: int, kandidats: list[KandidatVoteCreate], db: Session):
     try:
         daftar_vote = db.query(DaftarVotes).get(id)
@@ -85,8 +154,6 @@ def add_list_kandidat(id: int, kandidats: list[KandidatVoteCreate], db: Session)
                                 detail="ID Daftar Vote tidak ditemukan")
 
         daftar_vote.list_kandidat = jsonable_encoder(kandidats)
-
-        print(jsonable_encoder(kandidats))
 
         db.commit()
 
@@ -108,8 +175,6 @@ def add_list_pemilih(id: int, pemilihs: list[PemilihVoteCreate], db: Session):
                                 detail="ID Daftar Vote tidak ditemukan")
 
         daftar_vote.list_pemilih = jsonable_encoder(pemilihs)
-
-        print(jsonable_encoder(pemilihs))
 
         db.commit()
 
