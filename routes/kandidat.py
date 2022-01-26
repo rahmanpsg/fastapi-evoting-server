@@ -20,7 +20,8 @@ async def all(db: Session = Depends(get_db), current_user: User = Depends(get_cu
 
 
 @kandidatRoute.get("/foto/{id}")
-def foto(id: int, db: Session = Depends(get_db)):
+async def foto(id: int, db: Session = Depends(get_db)):
+    await asyncio.sleep(2)
     return kandidatRepository.get_foto(id, db)
 
 

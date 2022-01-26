@@ -5,7 +5,7 @@ from schemas.token import TokenData
 
 SECRET_KEY = "skripsi-2022"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+ACCESS_TOKEN_EXPIRE_MINUTES = 360
 
 
 def create_access_token(data: dict):

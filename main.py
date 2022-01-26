@@ -4,7 +4,7 @@ import uvicorn
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from config.db import engine, Base
-from routes.index import authRoute, userRoute, kandidatRoute, pemilihRoute, daftarVoteRoute, voteRoute
+from routes.index import authRoute, userRoute, kandidatRoute, pemilihRoute, daftarVoteRoute, voteRoute, totalRoute
 from services.lbph import LBPH
 
 import models
@@ -31,6 +31,7 @@ app.include_router(kandidatRoute)
 app.include_router(pemilihRoute)
 app.include_router(daftarVoteRoute)
 app.include_router(voteRoute)
+app.include_router(totalRoute)
 
 # lbph = LBPH()
 
