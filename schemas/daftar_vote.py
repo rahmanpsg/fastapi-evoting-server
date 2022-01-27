@@ -15,6 +15,10 @@ class DaftarVoteBase(BaseModel):
     jam_selesai: time
 
 
+class Voting(BaseModel):
+    vote_nomor: int
+
+
 class DaftarVoteCreate(DaftarVoteBase):
     status: Optional[bool] = True
 
@@ -32,6 +36,13 @@ class DaftarVote(DaftarVoteBase):
 
     class Config:
         orm_mode = True
+
+
+class DaftarVotePemilih(DaftarVoteBase):
+    id: int
+    list_kandidat: list[KandidatVoteCreate]
+    telah_memilih: bool
+    vote_nomor: int
 
 
 class DaftarVoteResponse(BaseModel):

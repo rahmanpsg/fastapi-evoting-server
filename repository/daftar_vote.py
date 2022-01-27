@@ -1,3 +1,5 @@
+from datetime import datetime
+import json
 from fastapi import status, HTTPException
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
@@ -5,7 +7,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from models.daftar_vote import DaftarVotes
 from models.kandidat import Kandidats
 from models.user import Users
-from schemas.daftar_vote import DaftarVoteCreate, DaftarVoteResponse
+from schemas.daftar_vote import DaftarVote, DaftarVoteCreate, DaftarVotePemilih, DaftarVoteResponse
 from schemas.kandidat import KandidatHitungCepat, KandidatVoteCreate
 from schemas.user import PemilihKotakSuara, PemilihVoteCreate
 from services.error_handling import add_or_edit_exception
@@ -217,5 +219,28 @@ def cek_daftar_vote(id: int, db: Session):
     if not daftar_vote.first():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="ID Daftar Vote tidak ditemukan")
+
+    return daftar_vote
+
+
+def get_daftar_vote_pemilih(id_pemilih: int, db: Session):
+    query = db.execute(
+        "SELECT *, JSON_UNQUOTE(JSON_EXTRACT(list_pemilih, REPLACE(JSON_UNQUOTE(JSON_SEARCH(list_pemilih, 'one', '18', NULL, '$[*].id')), 'id', 'vote_nomor'))) as vote_nomor FROM vote_list WHERE JSON_SEARCH(list_pemilih, 'one', :id, NULL, '$[*].id') IS NOT NULL", {'id': id_pemilih}).all()
+
+    daftar_vote: list[DaftarVotePemilih] = []
+
+    for daftar in query:
+        waktu_mulai = datetime.strptime(
+            f"{daftar.tanggal_mulai} {daftar.jam_mulai}", "%Y-%m-%d %H:%M:%S")
+        waktu_selesai = datetime.strptime(
+            f"{daftar.tanggal_selesai} {daftar.jam_selesai}", "%Y-%m-%d %H:%M:%S")
+
+        list_kandidat = [KandidatVoteCreate(
+            id=int(kandidat['id']), nomor=int(kandidat['nomor'])) for kandidat in json.loads(daftar.list_kandidat)]
+
+        telah_memilih = daftar.vote_nomor != '-1'
+
+        daftar_vote.append(DaftarVotePemilih(id=daftar.id, nama=daftar.nama, keterangan=daftar.keterangan, tanggal_mulai=waktu_mulai.date(), jam_mulai=waktu_mulai.time(),
+                                             tanggal_selesai=waktu_selesai.date(), jam_selesai=waktu_selesai.time(), list_kandidat=list_kandidat, telah_memilih=telah_memilih, vote_nomor=daftar.vote_nomor))
 
     return daftar_vote

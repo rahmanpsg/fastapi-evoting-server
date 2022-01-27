@@ -17,6 +17,12 @@ def get_all(db: Session):
     return db.query(Kandidats).all()
 
 
+def get_kandidat(id: int, db: Session):
+    kandidat = db.query(Kandidats).get(id)
+
+    return kandidat
+
+
 def get_foto(id: int, db: Session):
     kandidat = cek_kandidat(id, db).first()
 
