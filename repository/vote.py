@@ -20,7 +20,7 @@ def add_voting(id_daftarVote: int, id_pemilih: int, vote_nomor: int, db: Session
                                 detail="ID Daftar Vote tidak ditemukan")
 
         result = db.execute(
-            "SELECT JSON_SET(list_pemilih, REPLACE(JSON_UNQUOTE(JSON_SEARCH(list_pemilih, 'one', :id_pemilih, NULL, '$[*].id')), '.id', ''), JSON_OBJECT('id', ':id_pemilih','vote_nomor', ':vote_nomor', 'waktu', :waktu)) as update_list_pemilih, JSON_LENGTH(list_pemilih) as total_kandidat FROM vote_list where id = :id", {'id': id_daftarVote, 'id_pemilih': id_pemilih, 'vote_nomor': vote_nomor, 'waktu': datetime.now().replace(microsecond=0)}).first()
+            "SELECT JSON_SET(list_pemilih, REPLACE(JSON_UNQUOTE(JSON_SEARCH(list_pemilih, 'one', :id_pemilih, NULL, '$[*].id')), '.id', ''), JSON_OBJECT('id', ':id_pemilih','vote_nomor', ':vote_nomor', 'waktu', :waktu)) as update_list_pemilih, JSON_LENGTH(list_kandidat) as total_kandidat FROM vote_list where id = :id", {'id': id_daftarVote, 'id_pemilih': id_pemilih, 'vote_nomor': vote_nomor, 'waktu': datetime.now().replace(microsecond=0)}).first()
 
         if not result[0]:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
