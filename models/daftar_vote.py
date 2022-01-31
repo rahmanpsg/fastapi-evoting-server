@@ -4,7 +4,7 @@ from config.db import Base
 
 
 class DaftarVotes(Base):
-    __tablename__ = "vote_list"
+    __tablename__ = "daftar_vote"
 
     id = Column(Integer, primary_key=True, index=True)
     nama = Column(String(100))

@@ -1,11 +1,10 @@
-import asyncio
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from config.db import get_db
 from schemas.daftar_vote import DaftarVote, DaftarVoteCreate, DaftarVoteList, DaftarVotePemilih, DaftarVoteResponse
 from schemas.kandidat import KandidatHitungCepat, KandidatVoteCreate
-from schemas.user import PemilihKotakSuara, PemilihVoteCreate
+from schemas.pemilih import PemilihKotakSuara, PemilihVoteCreate
 from services.oauth2 import get_current_user
 from repository import daftar_vote as daftarVoteRepository
 
@@ -65,5 +64,4 @@ async def add_list_pemilih(id: int, pemilihs: list[PemilihVoteCreate], db: Sessi
 
 @daftarVoteRoute.get("/pemilih/{id_pemilih}", response_model=list[DaftarVotePemilih], response_model_exclude=['list_pemilih'])
 async def get_daftar_vote_pemilih(id_pemilih: int,  db: Session = Depends(get_db)):
-    # await asyncio.sleep(2)
     return daftarVoteRepository.get_daftar_vote_pemilih(id_pemilih,  db)

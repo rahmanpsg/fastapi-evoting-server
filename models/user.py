@@ -4,14 +4,13 @@ from config.db import Base
 
 
 class Users(Base):
-    __tablename__ = "users"
+    __tablename__ = "user"
 
     id = Column(Integer, primary_key=True, index=True)
     nama = Column(String(100))
     username = Column(String(20), unique=True, index=True)
     password = Column(String(10))
-    role = Column(String(50), default="Pemilih")
-    status = Column(Boolean, default=True)
+    role = Column(String(50), default="petugas")
 
 # users = Table(
 #     'users', meta,

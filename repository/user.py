@@ -1,6 +1,7 @@
 from fastapi import status, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
+from models.pemilih import Pemilihs
 from models.user import Users
 from schemas.user import User, UserCreate, UserResponse
 from services.error_handling import add_or_edit_exception
@@ -12,12 +13,13 @@ def get_all(db: Session):
 
 def create(req: UserCreate, db: Session):
     try:
+        cek_username(req.username, db)
+
         new_user = Users(
             nama=req.nama,
             username=req.username,
             password=req.password,
             role=req.role,
-            status=True
         )
         db.add(new_user)
         db.commit()
@@ -62,3 +64,11 @@ def cek_user(id: int, db: Session):
                             detail="ID User tidak ditemukan")
 
     return user
+
+
+def cek_username(username: str, db: Session):
+    cek = db.query(Pemilihs.id).filter(Pemilihs.username == username).count()
+
+    if cek > 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Username telah digunakan")

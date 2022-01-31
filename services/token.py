@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
 
-from schemas.token import TokenData
+from schemas.authentication import TokenData
+
 
 SECRET_KEY = "skripsi-2022"
 ALGORITHM = "HS256"

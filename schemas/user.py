@@ -17,22 +17,9 @@ class User(UserBase):
     id: int
     role: str
     password: str
-    status: bool
 
     class Config:
         orm_mode = True
-
-# Pemilih output
-
-
-class PemilihVoteCreate(BaseModel):
-    id: str
-    vote_nomor: Optional[str] = -1  # nomor default jika belum melakukan voting
-    waktu: Optional[datetime] = None
-
-
-class PemilihKotakSuara(UserBase, PemilihVoteCreate):
-    pass
 
 
 class UserResponse(BaseModel):

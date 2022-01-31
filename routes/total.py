@@ -16,5 +16,5 @@ async def get_total_data(db: Session = Depends(get_db)):
 
 @totalRoute.get("/perolehansuara/{id_daftarVote}/", response_model=TotalPerolehanSuara)
 async def get_perolehan_suara(id_daftarVote: int,  db: Session = Depends(get_db)):
-    await asyncio.sleep(2)
+    # await asyncio.sleep(2)
     return totalRepository.get_perolehan_suara(id_daftarVote,  db)

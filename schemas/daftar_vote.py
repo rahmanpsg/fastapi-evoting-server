@@ -3,7 +3,7 @@ from typing import Optional
 from pydantic import BaseModel
 
 from schemas.kandidat import KandidatVoteCreate
-from schemas.user import PemilihVoteCreate
+from schemas.pemilih import PemilihVoteCreate
 
 
 class DaftarVoteBase(BaseModel):

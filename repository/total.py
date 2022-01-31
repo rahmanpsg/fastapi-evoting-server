@@ -7,6 +7,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from models.daftar_vote import DaftarVotes
 
 from models.kandidat import Kandidats
+from models.pemilih import Pemilihs
 from models.user import Users
 from schemas.total import Perolehan, Total, TotalKandidat, TotalPerolehanSuara
 
@@ -17,8 +18,8 @@ import numpy as np
 def get_total_data(db: Session):
     try:
         total_kandidat = db.query(Kandidats.id).count()
-        total_pemilih = db.query(Users.id).filter(
-            Users.role == 'pemilih').count()
+        total_pemilih = db.query(Pemilihs.id).filter(
+            Pemilihs.status == True).count()
 
         now = datetime.now()
 
@@ -65,7 +66,8 @@ def get_perolehan_suara(id_daftarVote: int, db: Session):
         waktu_selesai = datetime.combine(
             list.tanggal_selesai, list.jam_selesai)
 
-        waktu_selesai = waktu_selesai if waktu_selesai < datetime.now() else datetime.now()
+        waktu_selesai = waktu_selesai if waktu_selesai < datetime.now(
+        ) else datetime.now().replace(microsecond=0)
 
         # membuat daftar list waktu
         for i in range(11):

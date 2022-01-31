@@ -7,9 +7,9 @@ from sqlalchemy.exc import SQLAlchemyError
 from models.daftar_vote import DaftarVotes
 from models.kandidat import Kandidats
 from models.user import Users
-from schemas.daftar_vote import DaftarVote, DaftarVoteCreate, DaftarVotePemilih, DaftarVoteResponse
+from schemas.daftar_vote import DaftarVoteCreate, DaftarVotePemilih, DaftarVoteResponse
 from schemas.kandidat import KandidatHitungCepat, KandidatVoteCreate
-from schemas.user import PemilihKotakSuara, PemilihVoteCreate
+from schemas.pemilih import PemilihKotakSuara, PemilihVoteCreate
 from services.error_handling import add_or_edit_exception
 
 
@@ -225,7 +225,7 @@ def cek_daftar_vote(id: int, db: Session):
 
 def get_daftar_vote_pemilih(id_pemilih: int, db: Session):
     query = db.execute(
-        "SELECT *, JSON_UNQUOTE(JSON_EXTRACT(list_pemilih, REPLACE(JSON_UNQUOTE(JSON_SEARCH(list_pemilih, 'one', '18', NULL, '$[*].id')), 'id', 'vote_nomor'))) as vote_nomor FROM vote_list WHERE JSON_SEARCH(list_pemilih, 'one', :id, NULL, '$[*].id') IS NOT NULL", {'id': id_pemilih}).all()
+        "SELECT *, JSON_UNQUOTE(JSON_EXTRACT(list_pemilih, REPLACE(JSON_UNQUOTE(JSON_SEARCH(list_pemilih, 'one', ':id', NULL, '$[*].id')), 'id', 'vote_nomor'))) as vote_nomor FROM daftar_vote WHERE JSON_SEARCH(list_pemilih, 'one', :id, NULL, '$[*].id') IS NOT NULL", {'id': id_pemilih}).all()
 
     daftar_vote: list[DaftarVotePemilih] = []
 
