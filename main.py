@@ -1,14 +1,12 @@
 import uvicorn
-from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from config.db import engine, Base
 from routes.index import authRoute, userRoute, kandidatRoute, pemilihRoute, daftarVoteRoute, voteRoute, totalRoute, cetakRoute
+from app import app
 import routes.websocket
-
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="E-Voting REST API")
 
 app.add_middleware(
     CORSMiddleware,

@@ -1,4 +1,4 @@
-
+from app import app
 import cv2
 from fastapi import Depends, WebSocket, WebSocketDisconnect
 from fastapi.encoders import jsonable_encoder
@@ -6,7 +6,6 @@ from sqlalchemy.orm import Session
 from config.db import get_db
 from models.pemilih import Pemilihs
 from services.lbph import LBPH
-from main import app
 from services.token import create_access_token
 from schemas.authentication import Token
 
