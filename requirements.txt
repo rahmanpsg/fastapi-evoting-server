@@ -4,7 +4,7 @@ fpdf==1.7.2
 fpdf2==2.5.0
 jose==1.0.0
 numpy==1.19.5
-opencv_python==4.5.5.62
+opencv-python-headless==4.5.5.62
 pandas==1.4.0
 pydantic==1.9.0
 PyMySQL==1.0.2
