@@ -1,5 +1,4 @@
 from datetime import datetime
-import random
 from fastapi import HTTPException, status
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -8,7 +7,6 @@ from models.daftar_vote import DaftarVotes
 
 from models.kandidat import Kandidats
 from models.pemilih import Pemilihs
-from models.user import Users
 from schemas.total import Perolehan, Total, TotalKandidat, TotalPerolehanSuara
 
 import pandas as pd
@@ -61,18 +59,21 @@ def get_perolehan_suara(id_daftarVote: int, db: Session):
         waktu_mulai = datetime.combine(
             list.tanggal_mulai, list.jam_mulai)
 
-        # waktu_selesai = datetime.fromisoformat(
-        #     list_pemilih[-1]['waktu'] if list_pemilih[-1]['waktu'] else datetime.now().isoformat())
         waktu_selesai = datetime.combine(
             list.tanggal_selesai, list.jam_selesai)
 
         waktu_selesai = waktu_selesai if waktu_selesai < datetime.now(
         ) else datetime.now().replace(microsecond=0)
 
+        print(waktu_mulai)
+        print(waktu_selesai)
+
         # membuat daftar list waktu
         for i in range(11):
             waktu = random_date(start=waktu_mulai,
                                 end=waktu_selesai, position=i / 10)
+
+            print(waktu)
             list_waktu.append(waktu.to_pydatetime())
 
         list_waktu = sorted(list_waktu, key=lambda v: v)
@@ -104,13 +105,16 @@ def get_perolehan_suara(id_daftarVote: int, db: Session):
 
 
 def random_date(start, end, position=None):
-    start, end = pd.Timestamp(
-        start.strftime("%m/%d/%y %I:%M%p")), pd.Timestamp(end.strftime("%m/%d/%y %I:%M%p"))
-    delta = (end - start).total_seconds()
-    if position is None:
-        offset = np.random.uniform(0., delta)
-    else:
-        offset = position * delta
-    offset = pd.offsets.Second(offset)
-    t = start + offset
-    return t
+    try:
+        start, end = pd.Timestamp(
+            start.strftime("%m/%d/%y %I:%M%p")), pd.Timestamp(end.strftime("%m/%d/%y %I:%M%p"))
+        delta = (end - start).total_seconds()
+        if position is None:
+            offset = np.random.uniform(0., delta)
+        else:
+            offset = position * delta
+        offset = pd.offsets.Second(offset)
+        t = start + offset
+        return t
+    except:
+        pass

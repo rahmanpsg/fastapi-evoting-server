@@ -19,10 +19,6 @@ def get_all(db: Session):
 
 def create(req: DaftarVoteCreate, db: Session):
     try:
-        # v = validate(instance=req.list_kandidat, schema=Kandidat)
-        # list = req.dict(include={'list_kandidat', 'list_pemilih'})
-
-        # print(list['list_kandidat'])
         new = DaftarVotes(
             nama=req.nama,
             keterangan=req.keterangan,
@@ -30,11 +26,6 @@ def create(req: DaftarVoteCreate, db: Session):
             tanggal_selesai=req.tanggal_selesai,
             jam_mulai=req.jam_mulai,
             jam_selesai=req.jam_selesai,
-            # list_kandidat=list['list_kandidat'],
-            # list_pemilih=list['list_pemilih']
-            # status=True,
-            # created_at='',
-            # updated_at=''
         )
         db.add(new)
         db.commit()

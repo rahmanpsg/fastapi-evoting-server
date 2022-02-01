@@ -20,7 +20,7 @@ class Voting(BaseModel):
 
 
 class DaftarVoteCreate(DaftarVoteBase):
-    status: Optional[bool] = True
+    pass
 
 
 class DaftarVoteList(BaseModel):
@@ -32,7 +32,6 @@ class DaftarVote(DaftarVoteBase):
     id: int
     list_kandidat: Optional[list[KandidatVoteCreate]]
     list_pemilih: Optional[list[PemilihVoteCreate]]
-    status: bool
 
     class Config:
         orm_mode = True

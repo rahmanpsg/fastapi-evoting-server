@@ -1,72 +1,93 @@
 import base64
 import os
+from sys import flags
 import cv2
 import numpy as np
 
 
 class LBPH():
     def __init__(self):
-        self.database = ["Rahman", "Tom", "Clon"]
-        faces, labels = self.prepare_data('assets/training/')
-
-        # print(faces)
-        # print(labels)
-
-        # self.model = cv2.face_EigenFaceRecognizer.create()
-        # self.model = cv2.face_FisherFaceRecognizer.create()
+        # # self.model = cv2.face_EigenFaceRecognizer.create()
+        # # self.model = cv2.face_FisherFaceRecognizer.create()
         self.model = cv2.face_LBPHFaceRecognizer.create()
 
+        try:
+            self.model.read("assets/lbph_model.yml")
+        except:
+            self.training_model()
+
+    def training_model(self):
+        faces, labels = self.prepare_data('assets/training/')
+        if len(faces) == 0:
+            return
+
         self.model.train(faces, np.array(labels))
-        # self.model.read("assets/lbph_model.yml")
         self.model.save(filename="assets/lbph_model.yml")
 
     def prepare_data(self, data_path):
-        folders = os.listdir(data_path)
+        imgPaths = [os.path.join(data_path, f) for f in os.listdir(
+            data_path) if os.path.join(data_path, f).split('.')[-1] == 'jpg']
         labels = []
         faces = []
-        for folder in folders:
-            if folder.isdigit():
-                label = int(folder)
-                training_images_path = data_path + '/' + folder
-                for image in os.listdir(training_images_path):
-                    if image.split('.')[1] == 'jpg':
-                        image_path = training_images_path + '/' + image
-                        training_image = cv2.imread(image_path)
-                        face = self.face_detection(
-                            training_image)
-                        faces.append(face)
-                        labels.append(label)
+
+        for imgPath in imgPaths:
+            imgTraining = cv2.imread(imgPath)
+            face = self.face_detection(imgTraining)
+
+            label = int(os.path.split(imgPath)[-1].split('.')[0])
+
+            if face[0] is not None:
+                faces.append(face)
+                labels.append(label)
 
         print('Training Done')
+        print('Total Wajah {}'.format(len(np.unique(labels))))
         return faces, labels
 
-    def face_detection(self, image):
+    def face_detection(self, image, return_img_gray=True):
         image_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         haar_classifier = cv2.CascadeClassifier(
             'assets/haarcascade_frontalface_default.xml')
         # haar_classifier = cv2.CascadeClassifier(
         #     'assets/lbpcascade_frontalface.xml')
         faces = haar_classifier.detectMultiScale(
-            image_gray, scaleFactor=1.2, minNeighbors=5)
+            image_gray, scaleFactor=1.3, minNeighbors=5, minSize=(30, 30), flags=cv2.CASCADE_SCALE_IMAGE)
 
         if len(faces) == 0:
             return None, None
 
         (x, y, w, h) = faces[0]
-        return image_gray[y:y+w, x:x+h]
 
-    def predict_image(self, test_image):
+        if return_img_gray:
+            return image_gray[y:y+w, x:x+h]
+        else:
+            return image[y:y+w, x:x+h]
+
+    def predict_image(self, img):
         try:
-            img = test_image.copy()
+            # img = cv2.flip(test_image.copy(), 1)
+
+            # gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            # haar_classifier = cv2.CascadeClassifier(
+            #     'assets/haarcascade_frontalface_default.xml')
+
+            # faces = haar_classifier.detectMultiScale(
+            #     gray, scaleFactor=1.2, minNeighbors=5)
+
+            # for (x, y, w, h) in faces:
+            #     label, confidence = self.model.predict(gray[y:y+w, x:x+h])
+
+            #     print(label, confidence)
+
             face = self.face_detection(img)
 
-            if face is None:
+            if face[0] is None:
                 return {'detect': None}
 
             label, confidence = self.model.predict(face)
             print(label, confidence)
-            if confidence > 90:
-                return {'detect': label, 'nama': self.database[label-1]}
+            if confidence <= 50:
+                return {'detect': True, 'label': label}
             else:
                 return {'detect': False}
         except:

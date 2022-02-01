@@ -20,6 +20,10 @@ async def login(req: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
             Pemilihs.username == req.username).first()
         user.role = 'pemilih'
 
+        if user.status is not True:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Akun anda belum diaktifkan")
+
     if user and user.password == req.password:
         access_token = create_access_token(data={"sub": user.username})
         token = Token(access_token=access_token, token_type='bearer')

@@ -8,11 +8,12 @@ class PemilihBase(BaseModel):
     nama: str
     username: str
     alamat: str
-    status: Optional[bool] = None
 
 
 class PemilihCreate(PemilihBase):
     password: Optional[str]
+    status: Optional[bool] = None
+    face_recognition: Optional[bool]
 
 
 class PemilihVerif(BaseModel):
@@ -22,6 +23,8 @@ class PemilihVerif(BaseModel):
 class Pemilih(PemilihBase):
     id: int
     password: str
+    status: Optional[bool]
+    face_recognition: Optional[bool]
 
     class Config:
         orm_mode = True
