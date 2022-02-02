@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, DateTime,  Integer, String, Text, func
+from sqlalchemy import TIMESTAMP, Boolean, Column, DateTime,  Integer, String, Text, func
 
 from config.db import Base
 
@@ -14,5 +14,5 @@ class Pemilihs(Base):
     alamat = Column(Text)
     status = Column(Boolean, default=None)
     face_recognition = Column(Boolean, default=None)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    updated_at = Column(TIMESTAMP(timezone=True), onupdate=func.now())

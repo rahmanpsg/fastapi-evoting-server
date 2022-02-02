@@ -1,4 +1,4 @@
-from sqlalchemy import JSON, Boolean, Column, Date, DateTime,  Integer, String, Text, Time, func
+from sqlalchemy import JSON, TIMESTAMP, Boolean, Column, Date, DateTime,  Integer, String, Text, Time, func
 
 from config.db import Base
 
@@ -15,5 +15,5 @@ class DaftarVotes(Base):
     jam_selesai = Column(Time(timezone=True))
     list_kandidat = Column(JSON, default=[])
     list_pemilih = Column(JSON, default=[])
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    updated_at = Column(TIMESTAMP(timezone=True), onupdate=func.now())

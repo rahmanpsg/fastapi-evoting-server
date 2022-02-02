@@ -1,8 +1,12 @@
-from sqlalchemy import MetaData, create_engine
+import os
+from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from dotenv import load_dotenv
 
-SQLALCHEMY_DATABASE_URL = "mysql+pymysql://root@127.0.0.1:3306/db_evoting"
+load_dotenv()
+
+SQLALCHEMY_DATABASE_URL = os.getenv('DB_URL')
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 # meta = MetaData()

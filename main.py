@@ -1,9 +1,13 @@
+import os
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 from config.db import engine, Base
 from routes.index import authRoute, userRoute, kandidatRoute, pemilihRoute, daftarVoteRoute, voteRoute, totalRoute, cetakRoute
 from app import app
 import routes.websocket
+from dotenv import load_dotenv
+
+load_dotenv()
 
 Base.metadata.create_all(bind=engine)
 
@@ -11,7 +15,7 @@ Base.metadata.create_all(bind=engine)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost",
-                   "http://localhost:8080", "http://192.168.43.239:8080"],
+                   "http://localhost:8080", os.getenv('CLIENT_URL')],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -39,5 +43,5 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG,
                         stream=sys.stdout)
 
-    uvicorn.run("main:app", host='192.168.43.239',
+    uvicorn.run("main:app", host=os.getenv('BASE_URL'),
                 port=4000, reload=True, debug=False)
