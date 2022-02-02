@@ -12,4 +12,5 @@ python-dotenv==0.19.2
 python_jose==3.3.0
 python-multipart ==0.0.5
 SQLAlchemy==1.4.30
-uvicorn[standart]==0.17.0
+uvicorn==0.17.0
+websockets==10.1
