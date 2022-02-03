@@ -1,4 +1,5 @@
 from datetime import datetime, date, time
+import os
 from fpdf import FPDF
 from sqlalchemy.orm import Session
 from models.daftar_vote import DaftarVotes
@@ -22,7 +23,8 @@ class PDF(FPDF):
 
 
 def cetak_kandidat(db: Session):
-    path = 'assets/laporan/kandidat.pdf'
+    path = 'assets/kandidat.pdf'
+    cloud_name = os.getenv('CLOUD_NAME')
     pdf = PDF()
     pdf.add_page()
 
@@ -57,7 +59,7 @@ def cetak_kandidat(db: Session):
                 x = pdf.get_x()
                 print(pdf.get_y())
                 pdf.image(
-                    f"assets/foto/kandidat/{data}", h=20, w=20, x=30, y=y+1.3)
+                    f"http://res.cloudinary.com/{cloud_name}/image/upload/{data}", h=20, w=20, x=30, y=y+1.3)
                 pdf.set_y(y)
                 pdf.set_x(x)
             else:
@@ -69,7 +71,7 @@ def cetak_kandidat(db: Session):
 
 
 def cetak_pemilih(db: Session):
-    path = 'assets/laporan/pemilih.pdf'
+    path = 'assets/pemilih.pdf'
     pdf = PDF()
     pdf.add_page()
 
@@ -119,7 +121,7 @@ def cetak_pemilih(db: Session):
 
 
 def cetak_daftar_vote(db: Session):
-    path = 'assets/laporan/daftar_vote.pdf'
+    path = 'assets/daftar_vote.pdf'
     pdf = PDF()
     pdf.add_page(orientation="landscape", format="LEGAL")
 

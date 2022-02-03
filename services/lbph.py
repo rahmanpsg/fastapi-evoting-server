@@ -3,6 +3,8 @@ import os
 from sys import flags
 import cv2
 import numpy as np
+import cloudinary
+import urllib.request as req
 
 
 class LBPH():
@@ -17,23 +19,30 @@ class LBPH():
             self.training_model()
 
     def training_model(self):
-        faces, labels = self.prepare_data('assets/training/')
+        faces, labels = self.prepare_data()
         if len(faces) == 0:
             return
 
         self.model.train(faces, np.array(labels))
         self.model.save(filename="assets/lbph_model.yml")
 
-    def prepare_data(self, data_path):
-        imgPaths = [os.path.join(data_path, f) for f in os.listdir(
-            data_path) if os.path.join(data_path, f).split('.')[-1] == 'jpg']
+    def prepare_data(self):
         labels = []
         faces = []
+        results = cloudinary.api.resources(prefix="training", type="upload")
 
-        for imgPath in imgPaths:
+        for result in results['resources']:
+            url = result['url']
+
+            print("load image " + result['url'])
+
+            imgPath = 'assets/' + \
+                result['public_id'].split('/')[-1]+"."+result['format']
+
+            req.urlretrieve(result['url'], imgPath)
+
             imgTraining = cv2.imread(imgPath)
             face = self.face_detection(imgTraining)
-
             label = int(os.path.split(imgPath)[-1].split('.')[0])
 
             if face[0] is not None:
@@ -65,19 +74,6 @@ class LBPH():
 
     def predict_image(self, img):
         try:
-            # img = cv2.flip(test_image.copy(), 1)
-
-            # gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            # haar_classifier = cv2.CascadeClassifier(
-            #     'assets/haarcascade_frontalface_default.xml')
-
-            # faces = haar_classifier.detectMultiScale(
-            #     gray, scaleFactor=1.2, minNeighbors=5)
-
-            # for (x, y, w, h) in faces:
-            #     label, confidence = self.model.predict(gray[y:y+w, x:x+h])
-
-            #     print(label, confidence)
 
             face = self.face_detection(img)
 

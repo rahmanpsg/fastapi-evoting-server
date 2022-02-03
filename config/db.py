@@ -1,4 +1,5 @@
 import os
+import cloudinary
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -6,16 +7,19 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-SQLALCHEMY_DATABASE_URL = os.getenv('DB_URL')
+
+cloudinary.config(
+    cloud_name=os.getenv('CLOUD_NAME'),
+    api_key=os.getenv('API_KEY'),
+    api_secret=os.getenv('API_SECRET')
+)
+
+SQLALCHEMY_DATABASE_URL = os.getenv('DB_URL_DEV')
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
-# meta = MetaData()
-# conn = engine.connect()
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
-
-# # Dependency
 
 
 def get_db():

@@ -1,3 +1,4 @@
+import io
 from app import app
 import cv2
 from fastapi import Depends, WebSocket, WebSocketDisconnect
@@ -8,6 +9,8 @@ from models.pemilih import Pemilihs
 from services.lbph import LBPH
 from services.token import create_access_token
 from schemas.authentication import Token
+import cloudinary.uploader
+from PIL import Image
 
 lbph = LBPH()
 
@@ -75,10 +78,12 @@ async def websocket_endpoint(websocket: WebSocket, db: Session = Depends(get_db)
 async def websocket_endpoint(websocket: WebSocket, id_pemilih: int, db: Session = Depends(get_db)):
     await websocket.accept()
     try:
-        trainingPath = 'assets/training/'
-        maxImg = 30
+        maxImg = 5
         file = 1
         while True:
+            if (file / maxImg) * 100 > 100:
+                return
+
             data = await websocket.receive_text()
             img = lbph.base64_cv2(data)
             imgBlur = cv2.Laplacian(img, cv2.CV_64F).var()
@@ -86,17 +91,24 @@ async def websocket_endpoint(websocket: WebSocket, id_pemilih: int, db: Session 
             response = {"detect": None, "message": "Tidak ada wajah terdeteksi",
                         "progress": (file / maxImg) * 100}
 
-            # if imgBlur <= 100:
-            #     response['message'] = 'Kamera blur. Gunakan kamera dengan resolusi lebih tinggi'
-            #     await websocket.send_json(response)
-            #     continue
+            if imgBlur <= 100:
+                response['message'] = 'Kamera blur. Gunakan kamera dengan resolusi lebih tinggi'
+                await websocket.send_json(response)
+                continue
 
             imgDetect = lbph.face_detection(img, False)
 
             if imgDetect[0] is not None:
-                name = str(id_pemilih) + "." + str(file) + '.jpg'
-                print(name)
-                cv2.imwrite(trainingPath + name, imgDetect)
+                name = str(id_pemilih) + "." + str(file)
+
+                imgColor = cv2.cvtColor(imgDetect, cv2.COLOR_BGR2RGB)
+                image = Image.fromarray(imgColor)
+
+                imgByteArr = image_to_byte_array(image)
+
+                cloudinary.uploader.upload(
+                    imgByteArr, public_id=name, folder='training', invalidate=True)
+
                 response['detect'] = True
                 file += 1
 
@@ -109,12 +121,19 @@ async def websocket_endpoint(websocket: WebSocket, id_pemilih: int, db: Session 
 
             await websocket.send_json(response)
     except WebSocketDisconnect:
-        if file >= 30:
+        if file >= maxImg:
             pemilih = db.query(Pemilihs).get(id_pemilih)
 
             pemilih.face_recognition = True
 
-            db.commit()
+            # db.commit()
 
             lbph.training_model()
         # pass
+
+
+def image_to_byte_array(image: Image):
+    imgByteArr = io.BytesIO()
+    image.save(imgByteArr, format='PNG')
+    imgByteArr = imgByteArr.getvalue()
+    return imgByteArr

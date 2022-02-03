@@ -1,5 +1,4 @@
 import os
-import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 from config.db import engine, Base
 from routes.index import authRoute, userRoute, kandidatRoute, pemilihRoute, daftarVoteRoute, voteRoute, totalRoute, cetakRoute
@@ -26,6 +25,7 @@ app.add_middleware(
 async def index():
     return "E-Voting REST API"
 
+
 app.include_router(authRoute)
 app.include_router(userRoute)
 app.include_router(kandidatRoute)
@@ -34,14 +34,3 @@ app.include_router(daftarVoteRoute)
 app.include_router(voteRoute)
 app.include_router(totalRoute)
 app.include_router(cetakRoute)
-
-
-if __name__ == '__main__':
-    import logging
-    import sys
-
-    logging.basicConfig(level=logging.DEBUG,
-                        stream=sys.stdout)
-
-    uvicorn.run("main:app", host=os.getenv('BASE_URL'),
-                port=4000, reload=True, debug=False)
