@@ -1,3 +1,4 @@
+import asyncio
 import io
 from app import app
 import cv2
@@ -30,7 +31,7 @@ async def websocket_endpoint(websocket: WebSocket, db: Session = Depends(get_db)
             response = {'detect': None, 'message': None, 'progress': 0}
 
             if imgBlur <= 100:
-                response['message'] = 'Kamera blur'
+                response['message'] = 'Kamera blur. Gunakan kamera dengan resolusi lebih tinggi'
                 await websocket.send_json(response)
                 continue
 
@@ -78,10 +79,15 @@ async def websocket_endpoint(websocket: WebSocket, db: Session = Depends(get_db)
 async def websocket_endpoint(websocket: WebSocket, id_pemilih: int, db: Session = Depends(get_db)):
     await websocket.accept()
     try:
-        maxImg = 5
+        maxImg = 30
         file = 1
         while True:
             if (file / maxImg) * 100 > 100:
+                pemilih = db.query(Pemilihs).get(id_pemilih)
+                pemilih.face_recognition = True
+                db.commit()
+
+                asyncio.create_task(lbph.training_model())
                 return
 
             data = await websocket.receive_text()
@@ -106,8 +112,10 @@ async def websocket_endpoint(websocket: WebSocket, id_pemilih: int, db: Session 
 
                 imgByteArr = image_to_byte_array(image)
 
-                cloudinary.uploader.upload(
-                    imgByteArr, public_id=name, folder='training', invalidate=True)
+                upload = cloudinary.uploader.upload(
+                    imgByteArr, public_id=name, folder='training', invalidate=True, **{'async': True})
+
+                print(upload)
 
                 response['detect'] = True
                 file += 1
@@ -121,15 +129,7 @@ async def websocket_endpoint(websocket: WebSocket, id_pemilih: int, db: Session 
 
             await websocket.send_json(response)
     except WebSocketDisconnect:
-        if file >= maxImg:
-            pemilih = db.query(Pemilihs).get(id_pemilih)
-
-            pemilih.face_recognition = True
-
-            db.commit()
-
-            lbph.training_model()
-        # pass
+        pass
 
 
 def image_to_byte_array(image: Image):

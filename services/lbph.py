@@ -1,6 +1,6 @@
+import asyncio
 import base64
 import os
-from sys import flags
 import cv2
 import numpy as np
 import cloudinary
@@ -16,30 +16,33 @@ class LBPH():
         try:
             self.model.read("assets/lbph_model.yml")
         except:
-            self.training_model()
+            asyncio.create_task(self.training_model())
 
-    def training_model(self):
-        faces, labels = self.prepare_data()
+    async def training_model(self):
+        faces, labels = await self.prepare_data()
         if len(faces) == 0:
             return
 
         self.model.train(faces, np.array(labels))
         self.model.save(filename="assets/lbph_model.yml")
 
-    def prepare_data(self):
+    async def prepare_data(self):
         labels = []
         faces = []
-        results = cloudinary.api.resources(prefix="training", type="upload")
+        results = cloudinary.api.resources(
+            prefix="training", type="upload", max_results=500)
+
+        print(len(results['resources']))
 
         for result in results['resources']:
             url = result['url']
 
-            print("load image " + result['url'])
+            print("download image " + url)
 
             imgPath = 'assets/' + \
                 result['public_id'].split('/')[-1]+"."+result['format']
 
-            req.urlretrieve(result['url'], imgPath)
+            req.urlretrieve(url, imgPath)
 
             imgTraining = cv2.imread(imgPath)
             face = self.face_detection(imgTraining)
