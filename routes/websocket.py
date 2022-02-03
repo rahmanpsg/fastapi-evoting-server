@@ -24,6 +24,11 @@ async def websocket_endpoint(websocket: WebSocket, db: Session = Depends(get_db)
     currentDetect = None
     try:
         while True:
+            progress = (totalDetect/maxDetect) * 100
+
+            if progress > 100:
+                return
+
             data = await websocket.receive_text()
             img = lbph.base64_cv2(data)
             imgBlur = cv2.Laplacian(img, cv2.CV_64F).var()
@@ -51,8 +56,6 @@ async def websocket_endpoint(websocket: WebSocket, db: Session = Depends(get_db)
                 response['message'] = 'Tidak ada wajah terdeteksi'
                 totalDetect = 0
 
-            progress = (totalDetect/maxDetect) * 100
-
             response['detect'] = imgPredict['detect']
             response['progress'] = progress
 
@@ -66,9 +69,6 @@ async def websocket_endpoint(websocket: WebSocket, db: Session = Depends(get_db)
                 response['token'] = jsonable_encoder(token)
                 response['user'] = jsonable_encoder(pemilih)
                 response['user']['role'] = 'pemilih'
-                # response['id'] = pemilih.id
-                # response['username'] = pemilih.username
-                # response['nama'] = pemilih.nama
 
             await websocket.send_json(response)
     except WebSocketDisconnect:
@@ -82,7 +82,9 @@ async def websocket_endpoint(websocket: WebSocket, id_pemilih: int, db: Session 
         maxImg = 30
         file = 1
         while True:
-            if (file / maxImg) * 100 > 100:
+            progress = (file / maxImg) * 100
+
+            if progress > 100:
                 pemilih = db.query(Pemilihs).get(id_pemilih)
                 pemilih.face_recognition = True
                 db.commit()
@@ -95,7 +97,7 @@ async def websocket_endpoint(websocket: WebSocket, id_pemilih: int, db: Session 
             imgBlur = cv2.Laplacian(img, cv2.CV_64F).var()
 
             response = {"detect": None, "message": "Tidak ada wajah terdeteksi",
-                        "progress": (file / maxImg) * 100}
+                        "progress": progress}
 
             if imgBlur <= 100:
                 response['message'] = 'Kamera blur. Gunakan kamera dengan resolusi lebih tinggi'
