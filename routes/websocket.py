@@ -126,7 +126,7 @@ async def websocket_endpoint(websocket: WebSocket, id_pemilih: int, db: Session 
 
             pemilih.face_recognition = True
 
-            # db.commit()
+            db.commit()
 
             lbph.training_model()
         # pass
