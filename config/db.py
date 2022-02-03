@@ -14,7 +14,7 @@ cloudinary.config(
     api_secret=os.getenv('API_SECRET')
 )
 
-SQLALCHEMY_DATABASE_URL = os.getenv('DB_URL_DEV')
+SQLALCHEMY_DATABASE_URL = os.getenv('DB_URL')
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
