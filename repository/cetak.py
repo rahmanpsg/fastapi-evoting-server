@@ -132,7 +132,7 @@ def cetak_daftar_vote(db: Session):
                   for idx, daftar_vote in enumerate(daftar_votes))
 
     pdf.set_font("Times", size=12)
-    line_height = pdf.font_size * 2
+    line_height = pdf.font_size * 4
     col_width = pdf.epw / len(TABLE_COL_NAMES)
 
     TABLE_COL_WIDTH = [col_width + (-(10 - col_width) / (len(TABLE_COL_NAMES)-1))
@@ -140,9 +140,6 @@ def cetak_daftar_vote(db: Session):
 
     TABLE_COL_WIDTH.insert(0, 10.0)
 
-    
-
-    
 
     def render_table_header():
         pdf.set_font(style="B")
@@ -157,11 +154,12 @@ def cetak_daftar_vote(db: Session):
     for row in TABLE_DATA:
         if pdf.will_page_break(line_height):
             render_table_header()
-
+        y = pdf.get_y()
         for idx, data in enumerate(row):
-            pdf.cell(TABLE_COL_WIDTH[idx], line_height,
-                     data, border=1, align="C")
-        pdf.ln(line_height)
+            pdf.set_xy(pdf.get_x(), y)
+            pdf.multi_cell(TABLE_COL_WIDTH[idx], line_height,
+                     data, border=1, align="C", max_line_height=8,ln=0 if len(row) != idx+1 else 1)
+        # pdf.ln(line_height)
 
     pdf.output(path)
     return path
