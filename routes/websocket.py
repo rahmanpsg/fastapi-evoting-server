@@ -1,19 +1,16 @@
 import asyncio
 import io
-from app import app
+from app import app, lbph
 import cv2
 from fastapi import Depends, WebSocket, WebSocketDisconnect
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 from config.db import get_db
 from models.pemilih import Pemilihs
-from services.lbph import LBPH
 from services.token import create_access_token
 from schemas.authentication import Token
 import cloudinary.uploader
 from PIL import Image
-
-lbph = LBPH()
 
 
 @app.websocket("/faceRecognition")

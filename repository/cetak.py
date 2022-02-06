@@ -8,36 +8,22 @@ from models.kandidat import Kandidats
 from models.pemilih import Pemilihs
 
 
-class PDF(FPDF):
-    def titles(self, title):
-        self.set_xy(0.0, 0.0)
-        self.set_font('helvetica', 'B', 16)
-        # self.set_text_color(220, 50, 50)
-        self.cell(w=210.0, h=40.0, align='C', txt=title, border=0)
-
-    def texts(self, text):
-        self.set_xy(10.0, 40.0)
-        self.set_text_color(76.0, 32.0, 250.0)
-        self.set_font('helvetica', '', 12)
-        self.multi_cell(0, 10, text)
-
-
 def cetak_kandidat(db: Session):
     path = 'assets/kandidat.pdf'
     cloud_name = os.getenv('CLOUD_NAME')
-    pdf = PDF()
+    pdf = FPDF()
     pdf.add_page()
 
-    TABLE_COL_NAMES = ("Foto", "Nama", "Keterangan")
+    TABLE_COL_NAMES = ("No", "Foto", "Nama", "Keterangan")
 
     kandidats = db.query(Kandidats).all()
 
-    TABLE_DATA = ((kandidat.foto, kandidat.nama, kandidat.keterangan)
-                  for kandidat in kandidats)
+    TABLE_DATA = ((str(idx+1), kandidat.foto, kandidat.nama, kandidat.keterangan)
+                  for idx, kandidat in enumerate(kandidats))
 
     pdf.set_font("Times", size=16)
     line_height = pdf.font_size * 4
-    col_width = pdf.epw / 3
+    col_width = pdf.epw / 4
 
     def render_table_header():
         pdf.set_font(style="B")
@@ -53,13 +39,12 @@ def cetak_kandidat(db: Session):
         if pdf.will_page_break(line_height):
             render_table_header()
         for idx, data in enumerate(row):
-            if idx == 0:
+            if idx == 1:
                 pdf.cell(col_width, line_height,  border=1)
                 y = pdf.get_y()
                 x = pdf.get_x()
-                print(pdf.get_y())
                 pdf.image(
-                    f"http://res.cloudinary.com/{cloud_name}/image/upload/{data}", h=20, w=20, x=30, y=y+1.3)
+                    f"https://res.cloudinary.com/{cloud_name}/image/upload/{data}", h=20, w=20, x=70, y=y+1.3)
                 pdf.set_y(y)
                 pdf.set_x(x)
             else:
@@ -72,7 +57,7 @@ def cetak_kandidat(db: Session):
 
 def cetak_pemilih(db: Session):
     path = 'assets/pemilih.pdf'
-    pdf = PDF()
+    pdf = FPDF()
     pdf.add_page()
 
     TABLE_COL_NAMES = ("NO", "NAMA", "NIK", "USERNAME", "ALAMAT", "STATUS")
@@ -122,7 +107,7 @@ def cetak_pemilih(db: Session):
 
 def cetak_daftar_vote(db: Session):
     path = 'assets/daftar_vote.pdf'
-    pdf = PDF()
+    pdf = FPDF()
     pdf.add_page(orientation="landscape", format="LEGAL")
 
     TABLE_COL_NAMES = ("NO", "NAMA VOTE", "KETERANGAN", "TANGGAL MULAI",
@@ -141,7 +126,7 @@ def cetak_daftar_vote(db: Session):
         elif tanggal_mulai < now < tanggal_selesai:
             return 'Aktif'
         elif now > tanggal_selesai:
-            'Selesai'
+            return 'Selesai'
 
     TABLE_DATA = ((str(idx+1), daftar_vote.nama, daftar_vote.keterangan, format_tanggal(daftar_vote.tanggal_mulai, daftar_vote.jam_mulai), format_tanggal(daftar_vote.tanggal_selesai, daftar_vote.jam_selesai), str(len(daftar_vote.list_kandidat)), str(len(daftar_vote.list_pemilih)), format_status(datetime.combine(daftar_vote.tanggal_mulai, daftar_vote.jam_mulai), datetime.combine(daftar_vote.tanggal_selesai, daftar_vote.jam_selesai)))
                   for idx, daftar_vote in enumerate(daftar_votes))
@@ -154,6 +139,10 @@ def cetak_daftar_vote(db: Session):
                        for i in range(len(TABLE_COL_NAMES)-1)]
 
     TABLE_COL_WIDTH.insert(0, 10.0)
+
+    
+
+    
 
     def render_table_header():
         pdf.set_font(style="B")
@@ -168,6 +157,7 @@ def cetak_daftar_vote(db: Session):
     for row in TABLE_DATA:
         if pdf.will_page_break(line_height):
             render_table_header()
+
         for idx, data in enumerate(row):
             pdf.cell(TABLE_COL_WIDTH[idx], line_height,
                      data, border=1, align="C")

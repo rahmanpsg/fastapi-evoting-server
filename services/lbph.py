@@ -35,7 +35,7 @@ class LBPH():
         print(len(results['resources']))
 
         for result in results['resources']:
-            url = result['url']
+            url = result['url'].replace('http','https')
 
             print("download image " + url)
 
