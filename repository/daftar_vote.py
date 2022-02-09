@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from models.daftar_vote import DaftarVotes
 from models.kandidat import Kandidats
+from models.pemilih import Pemilihs
 from models.user import Users
 from schemas.daftar_vote import DaftarVoteCreate, DaftarVotePemilih, DaftarVoteResponse
 from schemas.kandidat import KandidatHitungCepat, KandidatVoteCreate
@@ -83,18 +84,19 @@ def get_kotak_suara(id: int, db: Session):
         filter = sorted([pemilih for pemilih in list.list_pemilih if pemilih['waktu']],
                         key=lambda v: v['id'],)
 
-        ids = (pemilih['id'] for pemilih in filter)
-
-        pemilih = db.query(Users.nama, Users.username).filter(
-            Users.id.in_(ids)).all()
+        ids = (int(pemilih['id']) for pemilih in filter)
+        
+        pemilih = db.query(Pemilihs.nama, Pemilihs.username).filter(
+            Pemilihs.id.in_(ids)).all()
 
         data: list[PemilihKotakSuara] = []
 
-        for i in range(len(filter)):
-            fil = filter[i]
-            pem = pemilih[i]
-            data.append(PemilihKotakSuara(id=fil['id'], vote_nomor=fil['vote_nomor'],
-                        waktu=fil['waktu'], nama=pem['nama'], username=pem['username']))
+        if pemilih:
+            for i in range(len(filter)):
+                fil = filter[i]
+                pem = pemilih[i]
+                data.append(PemilihKotakSuara(id=fil['id'], vote_nomor=fil['vote_nomor'],
+                            waktu=fil['waktu'], nama=pem['nama'], username=pem['username']))
 
         return data
     except SQLAlchemyError as e:

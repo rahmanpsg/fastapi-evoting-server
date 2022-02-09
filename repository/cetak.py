@@ -7,6 +7,7 @@ from models.daftar_vote import DaftarVotes
 from models.kandidat import Kandidats
 from models.pemilih import Pemilihs
 
+import urllib.request as req
 
 def cetak_kandidat(db: Session):
     path = 'assets/kandidat.pdf'
@@ -19,7 +20,13 @@ def cetak_kandidat(db: Session):
     kandidats = db.query(Kandidats).all()
 
     TABLE_DATA = ((str(idx+1), kandidat.foto, kandidat.nama, kandidat.keterangan)
-                  for idx, kandidat in enumerate(kandidats))
+                  for idx, kandidat in enumerate(kandidats))    
+
+    # for kandidat in kandidats:
+    #     url = f"https://res.cloudinary.com/{cloud_name}/image/upload/q_auto:low,w_100,h_100/{kandidat.foto}"
+    #     print('downloading {url}')
+    #     imgPath = 'assets/kandidat/' + kandidat.foto.split('/')[-1]
+    #     req.urlretrieve(url, imgPath)
 
     pdf.set_font("Times", size=16)
     line_height = pdf.font_size * 4
@@ -40,11 +47,14 @@ def cetak_kandidat(db: Session):
             render_table_header()
         for idx, data in enumerate(row):
             if idx == 1:
+                print('downloading ${data}')
                 pdf.cell(col_width, line_height,  border=1)
                 y = pdf.get_y()
                 x = pdf.get_x()
                 pdf.image(
-                    f"https://res.cloudinary.com/{cloud_name}/image/upload/{data}", h=20, w=20, x=70, y=y+1.3)
+                    f"https://res.cloudinary.com/{cloud_name}/image/upload/q_auto:low,w_100,h_100/{data}", h=20, w=20, x=70, y=y+1.3)
+                # pdf.image(
+                #     f"assets/kandidat/{data.split('/')[-1]}", h=20, w=20, x=70, y=y+1.3)
                 pdf.set_y(y)
                 pdf.set_x(x)
             else:
@@ -75,7 +85,7 @@ def cetak_pemilih(db: Session):
     TABLE_DATA = ((str(idx+1), kandidat.nama, kandidat.nik, kandidat.username, kandidat.alamat, format_status(kandidat.status))
                   for idx, kandidat in enumerate(pemilihs))
 
-    pdf.set_font("Times", size=12)
+    pdf.set_font("Times", size=10)
     line_height = pdf.font_size * 2
     col_width = pdf.epw / 6
 
@@ -132,7 +142,7 @@ def cetak_daftar_vote(db: Session):
                   for idx, daftar_vote in enumerate(daftar_votes))
 
     pdf.set_font("Times", size=12)
-    line_height = pdf.font_size * 4
+    line_height = pdf.font_size * 2
     col_width = pdf.epw / len(TABLE_COL_NAMES)
 
     TABLE_COL_WIDTH = [col_width + (-(10 - col_width) / (len(TABLE_COL_NAMES)-1))
@@ -155,10 +165,12 @@ def cetak_daftar_vote(db: Session):
         if pdf.will_page_break(line_height):
             render_table_header()
         y = pdf.get_y()
+        lh = max([(pdf.get_string_width(data)/TABLE_COL_WIDTH[idx])*8 for idx, data in enumerate(row)]);
+            
         for idx, data in enumerate(row):
             pdf.set_xy(pdf.get_x(), y)
-            pdf.multi_cell(TABLE_COL_WIDTH[idx], line_height,
-                     data, border=1, align="C", max_line_height=8,ln=0 if len(row) != idx+1 else 1)
+            pdf.multi_cell(TABLE_COL_WIDTH[idx], lh,
+                     data, border=1, align="C", max_line_height=6,ln=0 if len(row) != idx+1 else 1)
         # pdf.ln(line_height)
 
     pdf.output(path)

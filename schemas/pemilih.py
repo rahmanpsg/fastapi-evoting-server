@@ -38,8 +38,9 @@ class PemilihVoteCreate(BaseModel):
     waktu: Optional[datetime] = None
 
 
-class PemilihKotakSuara(PemilihBase, PemilihVoteCreate):
-    pass
+class PemilihKotakSuara(PemilihVoteCreate):
+    nama:str
+    username:str
 
 
 class PemilihResponse(BaseModel):
