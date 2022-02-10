@@ -76,7 +76,7 @@ async def websocket_endpoint(websocket: WebSocket, db: Session = Depends(get_db)
 async def websocket_endpoint(websocket: WebSocket, id_pemilih: int, db: Session = Depends(get_db)):
     await websocket.accept()
     try:
-        maxImg = 30
+        maxImg = 100
         file = 1
         while True:
             progress = (file / maxImg) * 100
