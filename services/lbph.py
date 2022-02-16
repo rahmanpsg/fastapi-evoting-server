@@ -33,25 +33,6 @@ class LBPH():
 
         path = "assets/training.zip"
         url = cloudinary.utils.download_folder("kandidat")
-        
-
-        # self.last_percent_reported = 0
-
-        # def download_progress_hook(count, blockSize, totalSize):
-        #     # global last_percent_reported
-        #     percent = int(count * blockSize * 100 / totalSize)
-
-        #     if self.last_percent_reported != percent:
-        #         if percent % 5 == 0:
-        #             sys.stdout.write("%s%%" % percent)
-        #             sys.stdout.flush()
-        #         else:
-        #             sys.stdout.write(".")
-        #             sys.stdout.flush()
-
-        #         self.last_percent_reported = percent
-
-        # req.urlretrieve(url, path, reporthook=download_progress_hook)
 
         resources = []
         next_cursor=None
@@ -98,23 +79,27 @@ class LBPH():
         return faces, labels
 
     def face_detection(self, image, return_img_gray=True):
-        image_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        haar_classifier = cv2.CascadeClassifier(
-            'assets/haarcascade_frontalface_default.xml')
-        # haar_classifier = cv2.CascadeClassifier(
-        #     'assets/lbpcascade_frontalface.xml')
-        faces = haar_classifier.detectMultiScale(
-            image_gray, scaleFactor=1.3, minNeighbors=5, minSize=(30, 30), flags=cv2.CASCADE_SCALE_IMAGE)
+        try:
+            image_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            haar_classifier = cv2.CascadeClassifier(
+                'assets/haarcascade_frontalface_default.xml')
+            # haar_classifier = cv2.CascadeClassifier(
+            #     'assets/lbpcascade_frontalface.xml')
+            faces = haar_classifier.detectMultiScale(
+                image_gray, scaleFactor=1.3, minNeighbors=5, minSize=(30, 30), flags=cv2.CASCADE_SCALE_IMAGE)
 
-        if len(faces) == 0:
+            if len(faces) == 0:
+                return None, None
+
+            (x, y, w, h) = faces[0]
+
+            if return_img_gray:
+                return image_gray[y:y+w, x:x+h]
+            else:
+                return image[y:y+w, x:x+h]
+        except:
             return None, None
-
-        (x, y, w, h) = faces[0]
-
-        if return_img_gray:
-            return image_gray[y:y+w, x:x+h]
-        else:
-            return image[y:y+w, x:x+h]
+        
 
     def predict_image(self, img):
         try:
@@ -126,7 +111,7 @@ class LBPH():
 
             label, confidence = self.model.predict(face)
             print(label, confidence)
-            if confidence <= 50:
+            if confidence <= 40:
                 return {'detect': True, 'label': label}
             else:
                 return {'detect': False}
