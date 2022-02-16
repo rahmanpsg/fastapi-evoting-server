@@ -14,6 +14,7 @@ class LBPH():
         # # self.model = cv2.face_FisherFaceRecognizer.create()
         self.model = cv2.face_LBPHFaceRecognizer.create()
 
+    def training(self):
         try:
             self.model.read("assets/lbph_model.yml")            
         except:

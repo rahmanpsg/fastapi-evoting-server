@@ -2,7 +2,7 @@ import os
 from fastapi.middleware.cors import CORSMiddleware
 from config.db import engine, Base
 from routes.index import authRoute, userRoute, kandidatRoute, pemilihRoute, daftarVoteRoute, voteRoute, totalRoute, cetakRoute
-from app import app
+from app import app, lbph
 import routes.websocket
 from dotenv import load_dotenv
 
@@ -25,6 +25,9 @@ app.add_middleware(
 async def index():
     return "E-Voting REST API"
 
+@app.on_event("startup")
+async def startup_event():
+    lbph.training()
 
 app.include_router(authRoute)
 app.include_router(userRoute)
