@@ -31,7 +31,6 @@ class LBPH():
         labels = []
         faces = []
 
-        path = "assets/training.zip"
         url = cloudinary.utils.download_folder("kandidat")
 
         resources = []
@@ -57,7 +56,7 @@ class LBPH():
             for result in resources:
                 url = result['url'].replace('http','https')
 
-                # print("download image " + url)
+                print("download image " + url)
 
                 imgPath = 'assets/' + \
                     result['public_id'].split('/')[-1]+"."+result['format']
