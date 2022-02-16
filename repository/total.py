@@ -1,6 +1,6 @@
 from datetime import datetime
 from fastapi import HTTPException, status
-from sqlalchemy import func
+from sqlalchemy import between, func
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from models.daftar_vote import DaftarVotes
@@ -21,11 +21,14 @@ def get_total_data(db: Session):
 
         now = datetime.now()
 
-        total_vote_aktif = db.query(DaftarVotes.tanggal_mulai, DaftarVotes.jam_mulai).filter(
-            func.timestamp(DaftarVotes.tanggal_mulai, DaftarVotes.jam_mulai) <= now, func.timestamp(DaftarVotes.tanggal_selesai, DaftarVotes.jam_selesai) >= now).count()
+        # total_vote_aktif = db.query(DaftarVotes.tanggal_mulai, DaftarVotes.jam_mulai).filter(
+        #     func.timestamp(DaftarVotes.tanggal_mulai, DaftarVotes.jam_mulai) <= now, func.timestamp(DaftarVotes.tanggal_selesai, DaftarVotes.jam_selesai) >= now).count()
+
+        total_vote_aktif = db.query(DaftarVotes.nama).filter(between(now, DaftarVotes.tanggal_mulai+DaftarVotes.jam_mulai, DaftarVotes.tanggal_selesai+DaftarVotes.jam_selesai)).count()
 
         return Total(kandidat=total_kandidat, pemilih=total_pemilih, vote_aktif=total_vote_aktif)
     except SQLAlchemyError as e:
+        print(e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail=str(e.__dict__['orig']))
 

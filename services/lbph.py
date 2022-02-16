@@ -4,8 +4,9 @@ import os
 import cv2
 import numpy as np
 import cloudinary
+import cloudinary.uploader
 import urllib.request as req
-
+from alive_progress import alive_bar
 
 class LBPH():
     def __init__(self):
@@ -14,7 +15,7 @@ class LBPH():
         self.model = cv2.face_LBPHFaceRecognizer.create()
 
         try:
-            self.model.read("assets/lbph_model.yml")
+            self.model.read("assets/lbph_model.yml")            
         except:
             asyncio.create_task(self.training_model())
 
@@ -29,28 +30,68 @@ class LBPH():
     async def prepare_data(self):
         labels = []
         faces = []
-        results = cloudinary.api.resources(
-            prefix="training", type="upload", max_results=500)
 
-        print(len(results['resources']))
+        path = "assets/training.zip"
+        url = cloudinary.utils.download_folder("kandidat")
+        
 
-        for result in results['resources']:
-            url = result['url'].replace('http','https')
+        # self.last_percent_reported = 0
 
-            print("download image " + url)
+        # def download_progress_hook(count, blockSize, totalSize):
+        #     # global last_percent_reported
+        #     percent = int(count * blockSize * 100 / totalSize)
 
-            imgPath = 'assets/' + \
-                result['public_id'].split('/')[-1]+"."+result['format']
+        #     if self.last_percent_reported != percent:
+        #         if percent % 5 == 0:
+        #             sys.stdout.write("%s%%" % percent)
+        #             sys.stdout.flush()
+        #         else:
+        #             sys.stdout.write(".")
+        #             sys.stdout.flush()
 
-            req.urlretrieve(url, imgPath)
+        #         self.last_percent_reported = percent
 
-            imgTraining = cv2.imread(imgPath)
-            face = self.face_detection(imgTraining)
-            label = int(os.path.split(imgPath)[-1].split('.')[0])
+        # req.urlretrieve(url, path, reporthook=download_progress_hook)
 
-            if face[0] is not None:
-                faces.append(face)
-                labels.append(label)
+        resources = []
+        next_cursor=None
+
+        while(next_cursor is not False):
+            try:
+                results = cloudinary.api.resources(
+                    prefix="training", type="upload", max_results=500,next_cursor=next_cursor)
+                
+                resources.extend(results['resources'])
+                
+                next_cursor = results['next_cursor']
+            except:
+                next_cursor = False
+            
+
+        total = len(resources)
+
+        print("Total {} foto".format(total))
+
+        with alive_bar(total, ctrl_c=False) as bar:
+            for result in resources:
+                url = result['url'].replace('http','https')
+
+                # print("download image " + url)
+
+                imgPath = 'assets/' + \
+                    result['public_id'].split('/')[-1]+"."+result['format']
+
+                req.urlretrieve(url, imgPath)
+
+                imgTraining = cv2.imread(imgPath)
+                face = self.face_detection(imgTraining)
+                label = int(os.path.split(imgPath)[-1].split('.')[0])
+
+                if face[0] is not None:
+                    faces.append(face)
+                    labels.append(label)
+
+                bar()
 
         print('Training Done')
         print('Total Wajah {}'.format(len(np.unique(labels))))
