@@ -4,7 +4,6 @@ import os
 import cv2
 import numpy as np
 import cloudinary
-import cloudinary.uploader
 import urllib.request as req
 from alive_progress import alive_bar
 
@@ -14,11 +13,11 @@ class LBPH():
         # # self.model = cv2.face_FisherFaceRecognizer.create()
         self.model = cv2.face_LBPHFaceRecognizer.create()
 
-    def training(self):
         try:
             self.model.read("assets/lbph_model.yml")            
         except:
             asyncio.create_task(self.training_model())
+        
 
     async def training_model(self):
         faces, labels = await self.prepare_data()
@@ -31,8 +30,6 @@ class LBPH():
     async def prepare_data(self):
         labels = []
         faces = []
-
-        url = cloudinary.utils.download_folder("kandidat")
 
         resources = []
         next_cursor=None
@@ -53,7 +50,7 @@ class LBPH():
 
         print("Total {} foto".format(total))
 
-        with alive_bar(total, ctrl_c=False) as bar:
+        with alive_bar(total, ctrl_c=True) as bar:
             for result in resources:
                 url = result['url'].replace('http','https')
 
