@@ -13,7 +13,7 @@ def cetak_kandidat(db: Session):
     path = 'assets/kandidat.pdf'
     cloud_name = os.getenv('CLOUD_NAME')
     pdf = FPDF()
-    pdf.add_page()
+    pdf.add_page(orientation="landscape", format="LEGAL")
 
     TABLE_COL_NAMES = ("No", "Foto", "Nama", "Keterangan")
 
@@ -22,44 +22,36 @@ def cetak_kandidat(db: Session):
     TABLE_DATA = ((str(idx+1), kandidat.foto, kandidat.nama, kandidat.keterangan)
                   for idx, kandidat in enumerate(kandidats))    
 
-    # for kandidat in kandidats:
-    #     url = f"https://res.cloudinary.com/{cloud_name}/image/upload/q_auto:low,w_100,h_100/{kandidat.foto}"
-    #     print('downloading {url}')
-    #     imgPath = 'assets/kandidat/' + kandidat.foto.split('/')[-1]
-    #     req.urlretrieve(url, imgPath)
-
     pdf.set_font("Times", size=16)
-    line_height = pdf.font_size * 4
-    col_width = pdf.epw / 4
+    line_height = pdf.font_size * 2
 
-    def render_table_header():
-        pdf.set_font(style="B")
-        for col_name in TABLE_COL_NAMES:
-            pdf.cell(col_width, line_height - 10, col_name,
-                     border=1, align='C')
-        pdf.ln(line_height - 10)
-        pdf.set_font(style="")
+    TABLE_COL_WIDTH = [10.0, 50.0, 80.0, 200.0]
 
-    render_table_header()
+    render_table_header(pdf, TABLE_COL_NAMES,TABLE_COL_WIDTH, line_height)
 
     for row in TABLE_DATA:
         if pdf.will_page_break(line_height):
-            render_table_header()
-        for idx, data in enumerate(row):
+            render_table_header(pdf, TABLE_COL_NAMES,TABLE_COL_WIDTH, line_height)
+        y = pdf.get_y()
+        lh = max([(pdf.get_string_width(data)/TABLE_COL_WIDTH[idx])*8 for idx, data in enumerate(row)]);
+
+
+        for idx, data in enumerate(row):            
             if idx == 1:
-                print('downloading ${data}')
-                pdf.cell(col_width, line_height,  border=1)
+                pdf.cell(TABLE_COL_WIDTH[idx], lh,  border=1)
                 y = pdf.get_y()
+
                 x = pdf.get_x()
                 pdf.image(
-                    f"https://res.cloudinary.com/{cloud_name}/image/upload/q_auto:low,w_100,h_100/{data}", h=20, w=20, x=70, y=y+1.3)
-                # pdf.image(
-                #     f"assets/kandidat/{data.split('/')[-1]}", h=20, w=20, x=70, y=y+1.3)
+                    f"https://res.cloudinary.com/{cloud_name}/image/upload/q_auto:low,w_100,h_100/{data}", h=20, w=20, x=35, y=y+(lh/6))
                 pdf.set_y(y)
                 pdf.set_x(x)
+
+            elif idx == 3:                                
+                pdf.multi_cell(TABLE_COL_WIDTH[idx], lh,
+                     data, border=1, align="C", max_line_height=6,ln=0 if len(row) != idx+1 else 1)
             else:
-                pdf.cell(col_width, line_height, data, border=1, align="C")
-        pdf.ln(line_height)
+                pdf.cell(TABLE_COL_WIDTH[idx], lh, data, border=1, align="C")
 
     pdf.output(path)
     return path
@@ -92,20 +84,12 @@ def cetak_pemilih(db: Session):
     TABLE_COL_WIDTH = [col_width + ((col_width-10) / 5) for i in range(5)]
 
     TABLE_COL_WIDTH.insert(0, 10.0)
-
-    def render_table_header():
-        pdf.set_font(style="B")
-        for idx, col_name in enumerate(TABLE_COL_NAMES):
-            pdf.cell(TABLE_COL_WIDTH[idx], line_height, col_name,
-                     border=1, align='C')
-        pdf.ln(line_height)
-        pdf.set_font(style="")
-
-    render_table_header()
+    
+    render_table_header(pdf, TABLE_COL_NAMES,TABLE_COL_WIDTH, line_height)
 
     for row in TABLE_DATA:
         if pdf.will_page_break(line_height):
-            render_table_header()
+            render_table_header(pdf, TABLE_COL_NAMES,TABLE_COL_WIDTH, line_height)
         for idx, data in enumerate(row):
             pdf.cell(TABLE_COL_WIDTH[idx], line_height,
                      data, border=1, align="C")
@@ -151,19 +135,11 @@ def cetak_daftar_vote(db: Session):
     TABLE_COL_WIDTH.insert(0, 10.0)
 
 
-    def render_table_header():
-        pdf.set_font(style="B")
-        for idx, col_name in enumerate(TABLE_COL_NAMES):
-            pdf.cell(TABLE_COL_WIDTH[idx], line_height, col_name,
-                     border=1, align='C')
-        pdf.ln(line_height)
-        pdf.set_font(style="")
-
-    render_table_header()
+    render_table_header(pdf, TABLE_COL_NAMES,TABLE_COL_WIDTH, line_height)
 
     for row in TABLE_DATA:
         if pdf.will_page_break(line_height):
-            render_table_header()
+            render_table_header(pdf, TABLE_COL_NAMES,TABLE_COL_WIDTH, line_height)
         y = pdf.get_y()
         lh = max([(pdf.get_string_width(data)/TABLE_COL_WIDTH[idx])*8 for idx, data in enumerate(row)]);
             
@@ -175,3 +151,11 @@ def cetak_daftar_vote(db: Session):
 
     pdf.output(path)
     return path
+
+def render_table_header(pdf, TABLE_COL_NAMES,TABLE_COL_WIDTH, line_height):
+        pdf.set_font(style="B")
+        for idx, col_name in enumerate(TABLE_COL_NAMES):
+            pdf.cell(TABLE_COL_WIDTH[idx], line_height, col_name,
+                     border=1, align='C')
+        pdf.ln(line_height)
+        pdf.set_font(style="")
