@@ -1,10 +1,12 @@
-from fastapi import status, HTTPException
+from fastapi import BackgroundTasks, status, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from models.pemilih import Pemilihs
 from models.user import Users
 from schemas.pemilih import PemilihCreate, PemilihResponse, PemilihVerif
 from services.error_handling import add_or_edit_exception
+from services.sms_gateway import kirim_sms
+import os
 
 save_path = 'assets/foto/kandidat/'
 
@@ -22,15 +24,19 @@ def get_pemilih(id: int, db: Session):
         add_or_edit_exception(e)
 
 
-async def create(req: PemilihCreate, db: Session):
+async def create(req: PemilihCreate,bg_task: BackgroundTasks, db: Session):
     try:
         cek_username(req.username, db)
 
         new = Pemilihs(
-            nik=req.nik, nama=req.nama, username=req.username, password=req.password, alamat=req.alamat, status=req.status)
+            nik=req.nik, nama=req.nama, username=req.username, password=req.password, alamat=req.alamat, status=req.status, telpon=req.telpon)
         db.add(new)
         db.commit()
         db.refresh(new)
+
+        pesan = f"Akun anda telah didaftarkan untuk melakukan online voting. Silahkan login menggunakan username : {req.username}, password : {req.password} di {os.getenv('CLIENT_URL')}."
+
+        bg_task.add_task(kirim_sms, req.telpon, pesan)
 
         return PemilihResponse(message="Pemilih berhasil ditambahkan", item=new)
 

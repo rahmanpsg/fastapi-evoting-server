@@ -17,6 +17,7 @@ class User(UserBase):
     id: int
     role: str
     password: str
+    face_recognition: Optional[bool]
 
     class Config:
         orm_mode = True

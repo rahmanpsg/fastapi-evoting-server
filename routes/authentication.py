@@ -37,6 +37,15 @@ async def login(req: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
         status_code=status.HTTP_400_BAD_REQUEST, detail="Username atau password salah")
 
 
+# @authRoute.post("/admin", response_model=Token)
+# async def login(req: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+#      user = db.query(Users).filter(Users.username == req.username).first()
+
+#      if user and user.password == req.password:
+#         access_token = create_access_token(data={"sub": user.username})
+#         token = Token(access_token=access_token, token_type='bearer')
+#         return token
+
 @authRoute.post("/registrasi", response_model=PemilihResponse, status_code=status.HTTP_201_CREATED)
 async def registrasi(req: PemilihCreate,  db: Session = Depends(get_db)):
     try:

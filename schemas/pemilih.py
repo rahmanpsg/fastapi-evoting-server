@@ -8,6 +8,7 @@ class PemilihBase(BaseModel):
     nama: str
     username: str
     alamat: str
+    telpon: Optional[str]
 
 
 class PemilihCreate(PemilihBase):

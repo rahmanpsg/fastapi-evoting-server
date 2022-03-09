@@ -12,6 +12,7 @@ class Pemilihs(Base):
     username = Column(String(20), unique=True, index=True)
     password = Column(String(10))
     alamat = Column(Text)
+    telpon = Column(String(20))
     status = Column(Boolean, default=None)
     face_recognition = Column(Boolean, default=None)
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())

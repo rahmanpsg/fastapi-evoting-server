@@ -12,7 +12,7 @@ daftarVoteRoute = APIRouter(prefix="/daftarVote", tags=['Daftar Vote'])
 
 
 @daftarVoteRoute.get("/", response_model=list[DaftarVote])
-async def all(db: Session = Depends(get_db), current_user: DaftarVote = Depends(get_current_user)):
+async def all(db: Session = Depends(get_db)):
     # await asyncio.sleep(2)
     return daftarVoteRepository.get_all(db)
 

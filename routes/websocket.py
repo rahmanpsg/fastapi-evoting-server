@@ -13,8 +13,8 @@ import cloudinary.uploader
 from PIL import Image
 
 
-@app.websocket("/faceRecognition")
-async def websocket_endpoint(websocket: WebSocket, db: Session = Depends(get_db)):
+@app.websocket("/faceRecognition/{id_pemilih}")
+async def websocket_endpoint(id_pemilih: int,websocket: WebSocket, db: Session = Depends(get_db)):
     await websocket.accept()
     totalDetect = 0
     maxDetect = 5
@@ -46,6 +46,11 @@ async def websocket_endpoint(websocket: WebSocket, db: Session = Depends(get_db)
                     totalDetect = 0
                 currentDetect = imgPredict['label']
                 response['message'] = 'Sedang mengenali wajah...'
+
+                if currentDetect != id_pemilih:
+                    imgPredict['detect'] = False
+                    totalDetect = 0
+                    response['message'] = 'Data wajah tidak sesuai'
             elif imgPredict['detect'] == False:
                 response['message'] = 'Wajah tidak terdaftar'
                 totalDetect = 0

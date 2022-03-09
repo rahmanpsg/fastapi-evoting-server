@@ -1,4 +1,4 @@
-from fastapi import APIRouter,  Depends, status
+from fastapi import APIRouter, BackgroundTasks,  Depends, status
 from sqlalchemy.orm import Session
 from config.db import get_db
 from schemas.pemilih import Pemilih, PemilihCreate, PemilihResponse, PemilihVerif
@@ -16,8 +16,8 @@ async def all(db: Session = Depends(get_db), current_user: Pemilih = Depends(get
 
 
 @pemilihRoute.post("/", response_model=PemilihResponse, status_code=status.HTTP_201_CREATED)
-async def create(pemilih: PemilihCreate,  db: Session = Depends(get_db), current_user: Pemilih = Depends(get_current_user)):
-    return await pemilihRepository.create(pemilih, db)
+async def create(pemilih: PemilihCreate,bg_task: BackgroundTasks,  db: Session = Depends(get_db), current_user: Pemilih = Depends(get_current_user)):
+    return await pemilihRepository.create(pemilih,bg_task, db)
 
 
 @pemilihRoute.put('/{id}', response_model=PemilihResponse, status_code=status.HTTP_202_ACCEPTED)
