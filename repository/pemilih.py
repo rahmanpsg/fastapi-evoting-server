@@ -6,6 +6,7 @@ from models.user import Users
 from schemas.pemilih import PemilihCreate, PemilihResponse, PemilihVerif
 from services.error_handling import add_or_edit_exception
 from services.sms_gateway import kirim_sms
+import cloudinary
 import os
 
 save_path = 'assets/foto/kandidat/'
@@ -58,12 +59,14 @@ async def update(id: int, req: PemilihCreate, db: Session):
         add_or_edit_exception(e)
 
 
-async def delete(id: int,  db: Session):
+async def delete(id: int, bg_task: BackgroundTasks,  db: Session):
     try:
         pemilih = cek_pemilih(id, db)
 
         pemilih.delete(synchronize_session=False)
         db.commit()
+
+        bg_task.add_task(hapus_file, id)
 
         return PemilihResponse(message="Pemilih berhasil dihapus")
     except SQLAlchemyError as e:
@@ -97,6 +100,14 @@ def cek_pemilih(id: int, db: Session):
                             detail="ID Pemilih tidak ditemukan")
 
     return pemilih
+
+def hapus_file(id: str):
+    public_ids = []
+
+    for i in range(1,101):
+        public_ids.append('training/{}.{}'.format(id, i))
+
+    delete = cloudinary.api.delete_resources(public_ids)
 
 
 def cek_username(username: str, db: Session):

@@ -26,9 +26,9 @@ async def update(id: int, pemilih: PemilihCreate,  db: Session = Depends(get_db)
 
 
 @pemilihRoute.delete("/{id}", response_model=PemilihResponse, status_code=status.HTTP_202_ACCEPTED)
-async def delete(id: int,  db: Session = Depends(get_db),
+async def delete(id: int,bg_task: BackgroundTasks,  db: Session = Depends(get_db),
                  current_user: Pemilih = Depends(get_current_user)):
-    return await pemilihRepository.delete(id,  db)
+    return await pemilihRepository.delete(id,bg_task,  db)
 
 
 @pemilihRoute.post("/verifikasi/{id}", response_model=PemilihResponse, status_code=status.HTTP_202_ACCEPTED)
