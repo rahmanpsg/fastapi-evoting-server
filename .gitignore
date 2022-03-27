@@ -1,6 +1,6 @@
 .DS_Store
 __pycache__
-assets/
 assets/*.yml
 assets/*.png
+assets/*.pdf
 .env

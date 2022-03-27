@@ -59,12 +59,17 @@ def cetak_kandidat(db: Session):
 
 def cetak_pemilih(db: Session):
     path = 'assets/pemilih.pdf'
-    pdf = FPDF()
-    pdf.add_page()
+    cloud_name = os.getenv('CLOUD_NAME')
 
-    TABLE_COL_NAMES = ("NO", "NAMA", "NIK", "USERNAME", "ALAMAT", "STATUS")
+    pdf = FPDF()
+    pdf.add_page(orientation="landscape", format="LEGAL")
+
+    TABLE_COL_NAMES = ("NO","FOTO", "NAMA", "NIK", "USERNAME", "ALAMAT", "STATUS")
 
     pemilihs = db.query(Pemilihs).all()
+
+    for pemilih in pemilihs:
+        print(pemilih.id)
 
     def format_status(status):
         if status is True:
@@ -74,24 +79,41 @@ def cetak_pemilih(db: Session):
         else:
             return 'Belum dikonfirmasi'
 
-    TABLE_DATA = ((str(idx+1), kandidat.nama, kandidat.nik, kandidat.username, kandidat.alamat, format_status(kandidat.status))
-                  for idx, kandidat in enumerate(pemilihs))
+    TABLE_DATA = ((str(idx+1), f"training/{pemilih.id}.1", pemilih.nama, pemilih.nik, pemilih.username, pemilih.alamat, format_status(pemilih.status))
+                  for idx, pemilih in enumerate(pemilihs))
 
     pdf.set_font("Times", size=10)
-    line_height = pdf.font_size * 2
-    col_width = pdf.epw / 6
+    line_height_header = pdf.font_size * 2
+    line_height = pdf.font_size * 8
+    col_width = pdf.epw / 7
 
-    TABLE_COL_WIDTH = [col_width + ((col_width-10) / 5) for i in range(5)]
+    TABLE_COL_WIDTH = [col_width + ((col_width-10) / 6) for i in range(6)]
 
     TABLE_COL_WIDTH.insert(0, 10.0)
     
-    render_table_header(pdf, TABLE_COL_NAMES,TABLE_COL_WIDTH, line_height)
+
+    render_table_header(pdf, TABLE_COL_NAMES,TABLE_COL_WIDTH, line_height_header)
 
     for row in TABLE_DATA:
-        if pdf.will_page_break(line_height):
-            render_table_header(pdf, TABLE_COL_NAMES,TABLE_COL_WIDTH, line_height)
         for idx, data in enumerate(row):
-            pdf.cell(TABLE_COL_WIDTH[idx], line_height,
+            if idx == 1:
+                pdf.cell(TABLE_COL_WIDTH[idx], line_height,  border=1)
+                y = pdf.get_y()
+                x = pdf.get_x()
+                
+                try:
+                    pdf.image(
+                    f"https://res.cloudinary.com/{cloud_name}/image/upload/q_auto:low,w_100,h_100/{data}", h=20, w=20, x=35, y=y+(line_height/6))
+                    
+                except:
+                    pdf.image(
+                    "./assets/users.jpeg", h=20, w=20, x=35, y=y+(line_height/6))
+
+                pdf.set_y(y)
+                pdf.set_x(x)
+                
+            else:
+                pdf.cell(TABLE_COL_WIDTH[idx], line_height,
                      data, border=1, align="C")
         pdf.ln(line_height)
 
